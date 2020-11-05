@@ -254,7 +254,7 @@ void thread_unblock(struct thread *t)
 
   //判断线程t是否已经被阻塞；
   ASSERT(t->status == THREAD_BLOCKED);
-  list_insert_ordered(&ready_list, &t->elem);
+  list_push_back(&ready_list, &t->elem);
   t->status = THREAD_READY;
   intr_set_level(old_level);
 }
@@ -503,11 +503,16 @@ init_thread(struct thread *t, const char *name, int priority)
   t->status = THREAD_BLOCKED;
   strlcpy(t->name, name, sizeof t->name);
   t->stack = (uint8_t *)t + PGSIZE;
+  //新增的属性
+  t->original_priority = priority;
+  t->waiting_lock = NULL;
+  list_init(&t->locks);
+  
   t->priority = priority;
   t->magic = THREAD_MAGIC;
 
   old_level = intr_disable();
-  list_insert_ordered(&all_list, &t->allelem);
+  list_push_back(&all_list, &t->allelem);
   intr_set_level(old_level);
 }
 
