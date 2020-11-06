@@ -93,7 +93,7 @@ void timer_sleep(int64_t ticks)
   ASSERT(intr_get_level () == INTR_ON);//
   enum intr_level old_level = intr_disable(); //将中断关闭才能调用thread_block()
   struct thread *t = thread_current(); //定义一个新的thread继承当前的thread
-  t->ticks_blocked = ticks;              //ticks是本函数的参数，睡眠刚开始时，剩余睡眠时间数就是所需睡眠的时间
+  t->sleep_ticks = ticks;              //ticks是本函数的参数，睡眠刚开始时，剩余睡眠时间数就是所需睡眠的时间
   thread_block();                      //让线程休眠，首先阻塞当前线程；
   intr_set_level(old_level);
   
@@ -173,7 +173,7 @@ timer_interrupt(struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick();
-  thread_foreach(check_blocked_time, NULL);
+  thread_foreach(block_check, NULL);
    //mlfqs
    if(thread_mlfqs){
      increase_recent_cpu();
