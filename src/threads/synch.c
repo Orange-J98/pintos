@@ -186,7 +186,6 @@ sema_test_helper(void *sema_)
 void lock_init(struct lock *lock)
 {
   ASSERT(lock != NULL);
-
   lock->holder = NULL;
   sema_init(&lock->semaphore, 1);
 }
@@ -286,9 +285,9 @@ void lock_release(struct lock *lock)
      int maximal = thread_current()->original_priority;
      if(!list_empty(&thread_current()->locks)){
        struct list_elem *max_priority_in_locks = list_max(&thread_current()->locks,lock_compare_max_priority,NULL);
-       int pp = list_entry(max_priority_in_locks,struct lock,elem)->max_priority;
-       if(pp > maximal){
-         maximal = pp;
+       int p = list_entry(max_priority_in_locks,struct lock,elem)->max_priority;
+       if(p > maximal){
+         maximal = p;
        }
      }
      thread_current()->priority = maximal;

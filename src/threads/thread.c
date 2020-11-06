@@ -21,6 +21,10 @@
    of thread.h for details. */
 #define THREAD_MAGIC 0xcd6abf4b
 
+//mlfqs
+/*The average number of threads ready to run in OS used in mlfqs*/
+int64_t load_avg;
+
 /* List of processes in THREAD_READY state, that is, processes
    that are ready to run but not actually running.
    处于THREAD_READY状态的进程列表，即进程已准备好运行但尚未实际运行。 */
@@ -72,8 +76,9 @@ static void *alloc_frame(struct thread *, size_t size);
 static void schedule(void);
 void thread_schedule_tail(struct thread *prev);
 static tid_t allocate_tid(void);
-//mlfqs
-int64_t load_avg;
+
+
+
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
    general and it is possible in this case only because loader.S
@@ -254,7 +259,7 @@ void thread_unblock(struct thread *t)
 
   //判断线程t是否已经被阻塞；
   ASSERT(t->status == THREAD_BLOCKED);
-  list_push_back(&ready_list, &t->elem);
+  list_push_back (&ready_list, &t->elem);
   t->status = THREAD_READY;
   intr_set_level(old_level);
 }
@@ -323,7 +328,7 @@ void thread_yield(void)
 
   old_level = intr_disable();
   if (cur != idle_thread)
-    list_push_back(&ready_list, &cur->elem);
+    list_push_back (&ready_list, &cur->elem);
   cur->status = THREAD_READY;
   schedule();
   intr_set_level(old_level);
@@ -366,9 +371,8 @@ void thread_set_priority(int new_priority)
   /*最后需要对thread_set_priority (int new_priority)进行更新，如果没有锁，
   那优先级捐赠的情况根本不用考虑，直接更新，或者更新的优先级大于当前线程的优
   先级，则更新当前线程优先级，但无论如何，original_priority都需要进行更新。*/
-  thread_current()->original_priority = new_priority;
-  if (list_empty(&thread_current()->locks) || new_priority > thread_current()->priority)
-  {
+  thread_current ()->original_priority = new_priority;
+ if(list_empty(&thread_current()->locks) || new_priority > thread_current()->priority){
     thread_current()->priority = new_priority;
     thread_yield();
   }
@@ -501,18 +505,20 @@ init_thread(struct thread *t, const char *name, int priority)
 
   memset(t, 0, sizeof *t);
   t->status = THREAD_BLOCKED;
+//初始化
+  t->sleep_ticks=0;
   strlcpy(t->name, name, sizeof t->name);
   t->stack = (uint8_t *)t + PGSIZE;
   //新增的属性
-  t->original_priority = priority;
-  t->waiting_lock = NULL;
-  list_init(&t->locks);
-  
   t->priority = priority;
-  t->magic = THREAD_MAGIC;
-
+  t->original_priority = priority;
+  t->magic=THREAD_MAGIC;
+  t->waiting_lock = NULL;
+  //???
   old_level = intr_disable();
-  list_push_back(&all_list, &t->allelem);
+
+  list_init(&t->locks);
+  list_push_back (&ready_list, &t->elem);
   intr_set_level(old_level);
 }
 

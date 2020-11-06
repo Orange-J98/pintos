@@ -455,6 +455,9 @@ list_sort (struct list *list, list_less_func *less, void *aux)
 /* Inserts ELEM in the proper position in LIST, which must be
    sorted according to LESS given auxiliary data AUX.
    Runs in O(n) average case in the number of elements in LIST. */
+
+/* 维持就绪队列为一个优先级队列。换一种说法： 我们在插入线程到就绪队
+   列的时候保证这个队列是一个优先级队列即可。*/
 void
 list_insert_ordered (struct list *list, struct list_elem *elem,
                      list_less_func *less, void *aux)
