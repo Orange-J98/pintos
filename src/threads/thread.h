@@ -103,7 +103,7 @@ struct thread
    unsigned magic; /* Detects stack overflow. */
 
    /*Owned by timer.c 用于timer.c*/
-   int64_t sleep_ticks; //用来保存剩余睡眠的ticks数
+   int64_t ticks_blocked; //用来保存剩余睡眠的ticks数
 
    struct list locks;         /* 本线程持有的锁 */
    struct lock *waiting_lock; /*该线程正在等待的锁*/
@@ -141,7 +141,7 @@ void thread_yield(void);
 /* Performs some operation on thread t, given auxiliary data AUX. */
 typedef void thread_action_func(struct thread *t, void *aux);
 void thread_foreach(thread_action_func *, void *);
-void block_check(struct thread *p, void *aux);
+void check_blocked_time(struct thread *t, void *aux UNUSED);
 
 int thread_get_priority(void);
 void thread_set_priority(int);

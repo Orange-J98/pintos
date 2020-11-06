@@ -350,16 +350,14 @@ void thread_foreach(thread_action_func *func, void *aux)
   }
 }
 
-//检测线程阻塞的函数
-void block_check(struct thread *p1, void *aux)
+/* Check every threads whether they should be awaked. */
+void check_blocked_time(struct thread *t, void *aux UNUSED)
 {
-  if (p1->status == THREAD_BLOCKED && p1->sleep_ticks > 0)
+  if (t->status == THREAD_BLOCKED && t->ticks_blocked > 0)
   {
-    p1->sleep_ticks--;
-    if (p1->sleep_ticks == 0)
-    {
-      thread_unblock(p); //判断定时器是否为0，若为0则唤醒线程
-    }
+    t->ticks_blocked--;
+    if (t->ticks_blocked == 0)
+      thread_unblock(t);
   }
 }
 
@@ -506,7 +504,7 @@ init_thread(struct thread *t, const char *name, int priority)
   memset(t, 0, sizeof *t);
   t->status = THREAD_BLOCKED;
 //初始化
-  t->sleep_ticks=0;
+  t->ticks_blocked=0;
   strlcpy(t->name, name, sizeof t->name);
   t->stack = (uint8_t *)t + PGSIZE;
   //新增的属性
@@ -518,7 +516,7 @@ init_thread(struct thread *t, const char *name, int priority)
   old_level = intr_disable();
 
   list_init(&t->locks);
-  list_push_back (&ready_list, &t->elem);
+  list_push_back (&all_list, &t->allelem);
   intr_set_level(old_level);
 }
 
